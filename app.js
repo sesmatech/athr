@@ -153,7 +153,7 @@ function prayers(history) {
   });
 
   const first = chooseUnused(named, 1, history);
-  const rest = chooseUnused(pronouns, 4, history);
+  const rest = chooseUnused(pronouns, 2, history);
   return first && rest ? [...first, ...rest] : null;
 }
 
@@ -164,8 +164,8 @@ function chooseVerseRun(selected, history) {
   const options = [];
 
   for (const s of sources) {
-    for (let start = 0; start <= s.ayahs.length - 5; start++) {
-      const ayahs = s.ayahs.slice(start, start + 5);
+    for (let start = 0; start <= s.ayahs.length - 3; start++) {
+      const ayahs = s.ayahs.slice(start, start + 3);
       if (ayahs.every((a) => !isRecent(history, "ayahs", `${s.number}:${a.numberInSurah}`))) {
         options.push({ s, start, ayahs });
       }
@@ -333,7 +333,7 @@ function drawPremiumFrame(h, bg, gold, dark) {
 }
 
 function drawFooterPanel(h, gold, dark) {
-  const top = h - 242;
+  const top = h - 212;
   const panel = ctx.createLinearGradient(120, top, 960, h - 54);
   panel.addColorStop(0, dark ? "#0d120ee8" : "#fffaf0e8");
   panel.addColorStop(1, dark ? "#283128e8" : "#f1e6d0e8");
@@ -343,13 +343,13 @@ function drawFooterPanel(h, gold, dark) {
   ctx.strokeStyle = gold;
   ctx.lineWidth = 1.5;
   ctx.beginPath();
-  ctx.roundRect(140, top, 800, 170, 30);
+  ctx.roundRect(140, top, 800, 140, 30);
   ctx.fill();
   ctx.stroke();
   ctx.globalAlpha = 0.45;
   ctx.beginPath();
-  ctx.moveTo(230, h - 108);
-  ctx.lineTo(850, h - 108);
+  ctx.moveTo(230, h - 102);
+  ctx.lineTo(850, h - 102);
   ctx.stroke();
   ctx.restore();
 
@@ -417,9 +417,9 @@ function render() {
 
   const { s, start, name } = current;
 
-  // خمس آيات متتالية
+  // ثلاث آيات متتالية
   const verses = s.ayahs
-    .slice(start, start + 5)
+    .slice(start, start + 3)
     .map(
       (a) =>
         a.text + " ﴿" + ar(a.numberInSurah) + "﴾"
@@ -430,38 +430,38 @@ function render() {
     index === 0 ? prayer.render(name) : prayer.render()
   );
 
-  let size = 40;
+  let size = 50;
   let ls;
   let pl;
   let need;
-  let budget = h - 509;
+  const budget = h - 495;
 
   // ضبط حجم الخط ليتسع المحتوى
   do {
-    ls = lines(verses, size, 860);
+    ls = lines(verses, size, 930);
 
-    pl = ds.map((t) => lines(t, size - 3, 840));
+    pl = ds.map((t) => lines(t, size - 1, 930));
 
     need =
-      ls.length * size * 1.7 +
+      ls.length * size * 1.65 +
       pl.reduce(
         (n, l) =>
-          n + l.length * (size - 3) * 1.55 + 15,
+          n + l.length * (size - 1) * 1.55 + 18,
         0
-      ) +
-      105;
+      ) + 72;
 
     if (need <= budget) break;
 
     size--;
-  } while (size > 9);
+  } while (size > 16);
 
-  let y = 205;
+  // يترك مسافة مريحة أسفل شريط البسملة والزخرفة العلوية.
+  let y = 210;
 
   // رسم الآيات
   for (const l of ls) {
     text(l, 540, y, size, ink);
-    y += size * 1.7;
+    y += size * 1.65;
   }
 
   // اسم السورة وأرقام الآيات
@@ -469,26 +469,26 @@ function render() {
     `${s.name} • الآيات ${
       ar(s.ayahs[start].numberInSurah)
     }–${
-      ar(s.ayahs[start + 4].numberInSurah)
+      ar(s.ayahs[start + 2].numberInSurah)
     }`,
     540,
-    y + 17,
-    22,
+    y + 12,
+    24,
     gold
   );
 
-  y += 60;
+  y += 44;
 
   // الخط الفاصل
   ctx.strokeStyle = gold;
   ctx.globalAlpha = 0.4;
   ctx.beginPath();
-  ctx.moveTo(350, y);
-  ctx.lineTo(730, y);
+  ctx.moveTo(300, y);
+  ctx.lineTo(780, y);
   ctx.stroke();
   ctx.globalAlpha = 1;
 
-  y += 45;
+  y += 26;
 
   // عنوان الأدعية
   text(
@@ -497,20 +497,21 @@ function render() {
       : "اللهم ارحم من اشتقنا إليه",
     540,
     y,
-    27,
+    29,
     gold
   );
 
-  y += 45;
+  // فصل واضح بين عنوان الأدعية وأول دعاء كي لا تتداخل الحروف العربية.
+  y += 58;
 
-  // رسم الأدعية الخمسة
+  // رسم الأدعية الثلاثة
   pl.forEach((l, i) => {
     for (const line of l) {
-      text(line, 540, y, size - 3, ink);
-      y += (size - 3) * 1.55;
+      text(line, 540, y, size - 1, ink);
+      y += (size - 1) * 1.55;
     }
 
-    y += 15;
+    y += 18;
   });
 
   drawFooterPanel(h, gold, dark);
@@ -519,15 +520,15 @@ function render() {
   text(
     "رحم الله روحًا لا تُنسى",
     540,
-    h - 190,
-    27,
+    h - 166,
+    29,
     gold
   );
 
   text(
     name,
     540,
-    h - 137,
+    h - 126,
     Math.min(
       37,
       (820 / Math.max(name.length, 1)) * 1.5
@@ -538,8 +539,8 @@ function render() {
   text(
     "\u062c\u0645\u064a\u0639\u0020\u0627\u0644\u062d\u0642\u0648\u0642\u0020\u0645\u062d\u0641\u0648\u0638\u0629\u0020SESMA Technology 2006",
     540,
-    h - 77,
-    16,
+    h - 76,
+    15,
     gold
   );
 
