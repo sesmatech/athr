@@ -626,8 +626,18 @@ $("download").onclick = async () => {
   setTimeout(() => URL.revokeObjectURL(url), 5000);
 };
 
-// مشاركة الصورة
-$("share").onclick = async () => {
+const shareModal = $("share-modal");
+
+function closeShareModal() {
+  shareModal.hidden = true;
+}
+
+function openShareModal() {
+  shareModal.hidden = false;
+  shareModal.querySelector("[data-share-platform]").focus();
+}
+
+async function shareImage(platform) {
   const file = new File(
     [await blob()],
     "athar.png",
@@ -638,7 +648,10 @@ $("share").onclick = async () => {
     try {
       await navigator.share({
         files: [file],
-        title: "آيات ودعاء"
+        title: "آيات ودعاء",
+        text: platform === "Other"
+          ? "آيات ودعاء لمن نحب"
+          : `مشاركة عبر ${platform}`
       });
     } catch (e) {
       if (e.name !== "AbortError") {
@@ -648,11 +661,23 @@ $("share").onclick = async () => {
     }
   } else {
     $("status").textContent =
-      "حمّل الصورة ثم أرفقها في واتساب أو المنصة التي تفضّلها.";
+      "جهازك لا يدعم إرفاق الصورة مباشرة؛ تم بدء التحميل لتتمكن من مشاركتها.";
 
     $("download").click();
   }
-};
+}
+
+// مشاركة الصورة
+$("share").onclick = openShareModal;
+document.querySelectorAll("[data-share-close]").forEach((button) => {
+  button.onclick = closeShareModal;
+});
+document.querySelectorAll("[data-share-platform]").forEach((button) => {
+  button.onclick = async () => {
+    closeShareModal();
+    await shareImage(button.dataset.sharePlatform);
+  };
+});
 
 // إظهار المعاينة الأولية
 render();
