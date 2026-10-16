@@ -5,6 +5,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
+    <meta name="theme-color" content="#17251f">
+    <meta property="og:title" content="أثر | آيات ودعاء لمن نحب">
+    <meta property="og:description" content="صمّم بوست آيات ودعاء باسم من تحب، وحمّله صورة جاهزة للمشاركة.">
+    <meta property="og:type" content="website">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2317251f'/%3E%3Ctext x='32' y='45' font-size='40' text-anchor='middle' fill='%23d4b371'%3E%DB%9E%3C/text%3E%3C/svg%3E">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>
       أثر | آيات ودعاء لمن نحب
@@ -181,13 +186,14 @@
           </div>
           <button class="share-close" type="button" data-share-close aria-label="إغلاق">×</button>
         </div>
-        <p>سنجهّز صورة PNG في نافذة المشاركة الخاصة بجهازك، ثم اختر المنصة وأكّد الإرسال.</p>
+        <p id="share-note">سنجهّز الصورة أولًا، ثم نفتح قائمة المشاركة الخاصة بهاتفك لإرفاقها.</p>
         <div class="platform-grid">
           <button type="button" data-share-platform="WhatsApp"><span class="platform-icon whatsapp">◉</span>واتساب</button>
           <button type="button" data-share-platform="Instagram"><span class="platform-icon instagram">◎</span>إنستغرام</button>
           <button type="button" data-share-platform="Facebook"><span class="platform-icon facebook">f</span>فيسبوك</button>
           <button type="button" data-share-platform="Other"><span class="platform-icon other">↗</span>تطبيق آخر</button>
         </div>
+        <button id="share-download" class="share-download" type="button" hidden>↓ حفظ الصورة على الجهاز</button>
       </section>
     </div>
     <footer>
@@ -205,6 +211,7 @@
         &#1580;&#1605;&#1610;&#1593; &#1575;&#1604;&#1581;&#1602;&#1608;&#1602; &#1605;&#1581;&#1601;&#1608;&#1592;&#1577; SESMA Technology 2006
       </div>
     </footer>
+    <div id="toast" role="status" aria-live="polite"></div>
     <script src="app.js">
     </script>
   </body>

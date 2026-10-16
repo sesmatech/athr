@@ -8,6 +8,10 @@ let female = false;
 let theme = "ivory";
 let current = null;
 let lastKey = "";
+let shareFile = null;
+let shareFilePromise = null;
+let shareVersion = 0;
+let shareTimer = null;
 
 const ar = (n) =>
   String(n).replace(/\d/g, (d) => "٠١٢٣٤٥٦٧٨٩"[d]);
@@ -367,6 +371,9 @@ function render() {
 
   canvas.width = 1080;
   canvas.height = h;
+  shareFile = null;
+  shareFilePromise = null;
+  shareVersion++;
 
   $("dimensions").textContent = `1080 × ${h} px`;
 
@@ -382,6 +389,13 @@ function render() {
   const gold = dark ? "#d7b974" : "#a7813b";
 
   drawPremiumFrame(h, bg, gold, dark);
+
+  // توهّج ناعم خلف النص
+  const glow = ctx.createRadialGradient(540, h * 0.4, 40, 540, h * 0.4, 620);
+  glow.addColorStop(0, gold + (dark ? "26" : "1c"));
+  glow.addColorStop(1, gold + "00");
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, 1080, h);
 
   ctx.textAlign = "center";
   ctx.direction = "rtl";
@@ -480,13 +494,24 @@ function render() {
   y += 44;
 
   // الخط الفاصل
-  ctx.strokeStyle = gold;
-  ctx.globalAlpha = 0.4;
+  for (const [x1, x2] of [[270, 510], [810, 570]]) {
+    const g = ctx.createLinearGradient(x1, 0, x2, 0);
+    g.addColorStop(0, gold + "00");
+    g.addColorStop(1, gold + "cc");
+    ctx.strokeStyle = g;
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.moveTo(x1, y);
+    ctx.lineTo(x2, y);
+    ctx.stroke();
+  }
+  ctx.fillStyle = gold;
   ctx.beginPath();
-  ctx.moveTo(300, y);
-  ctx.lineTo(780, y);
-  ctx.stroke();
-  ctx.globalAlpha = 1;
+  ctx.moveTo(540, y - 9); ctx.lineTo(549, y);
+  ctx.lineTo(540, y + 9); ctx.lineTo(531, y);
+  ctx.closePath();
+  ctx.fill();
+  ctx.lineWidth = 1;
 
   y += 26;
 
@@ -628,59 +653,172 @@ $("download").onclick = async () => {
 };
 
 const shareModal = $("share-modal");
+const shareNote = $("share-note");
+const shareDownload = $("share-download");
+
+const SHARE_TEXT = "آيات ودعاء لمن نحب";
 
 function closeShareModal() {
   shareModal.hidden = true;
 }
 
-function openShareModal() {
-  shareModal.hidden = false;
-  shareModal.querySelector("[data-share-platform]").focus();
+// يجهّز ملف الصورة مسبقًا حتى تكون المشاركة بضغطة واحدة
+function prepareShareFile() {
+  if (!shareFilePromise) {
+    const version = shareVersion;
+    shareFilePromise = blob().then((image) => {
+      const file = new File(
+        [image],
+        `athar-${$("size").value}.png`,
+        { type: "image/png" }
+      );
+      if (version === shareVersion) shareFile = file;
+      return file;
+    });
+  }
+  return shareFilePromise;
 }
 
-async function shareImage(platform) {
-  const file = new File(
-    [await blob()],
-    "athar.png",
-    { type: "image/png" }
-  );
+// تجهيز الصورة في الخلفية بعد كل تعديل على التصميم
+function scheduleSharePrep() {
+  clearTimeout(shareTimer);
+  shareTimer = setTimeout(() => {
+    if (!$("share").disabled) prepareShareFile().catch(() => {});
+  }, 400);
+}
 
-  if (navigator.canShare?.({ files: [file] })) {
-    try {
+function downloadShareFile() {
+  const file = shareFile;
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = file.name;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
+// بديل للمتصفحات التي لا تدعم مشاركة الملفات (مثل الحاسوب)
+async function showShareFallback() {
+  await prepareShareFile();
+  downloadShareFile();
+  shareModal.hidden = false;
+  shareDownload.hidden = false;
+  shareNote.textContent =
+    "تم حفظ الصورة على جهازك. اختر المنصة لفتحها، ثم أرفق الصورة المحفوظة.";
+}
+
+function openPlatform(platform) {
+  const text = encodeURIComponent(SHARE_TEXT);
+  const pageUrl = encodeURIComponent(location.href);
+  const urls = {
+    WhatsApp: `https://wa.me/?text=${text}`,
+    Facebook: `https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`,
+    Instagram: "https://www.instagram.com/"
+  };
+  if (urls[platform]) window.open(urls[platform], "_blank", "noopener");
+  else closeShareModal();
+}
+
+// مشاركة بضغطة واحدة: تفتح قائمة المشاركة مباشرة مع الصورة مرفقة
+async function shareNow() {
+  const btn = $("share");
+  navigator.vibrate?.(12);
+  let file = shareFile;
+
+  try {
+    if (!file) {
+      btn.disabled = true;
+      $("status").textContent = "جارٍ تجهيز الصورة…";
+      file = await prepareShareFile();
+    }
+
+    if (navigator.canShare?.({ files: [file] })) {
       await navigator.share({
         files: [file],
         title: "آيات ودعاء",
-        text: platform === "Other"
-          ? "آيات ودعاء لمن نحب"
-          : `مشاركة عبر ${platform}`
+        text: SHARE_TEXT
       });
-    } catch (e) {
-      if (e.name !== "AbortError") {
-        $("status").textContent =
-          "تعذّرت المشاركة. يمكنك تحميل الصورة ومشاركتها.";
-      }
+      $("status").textContent = "تمت المشاركة. تقبّل الله منكم.";
+      toast("تمت المشاركة. تقبّل الله منكم ✦");
+    } else {
+      await showShareFallback();
     }
-  } else {
-    $("status").textContent =
-      "جهازك لا يدعم إرفاق الصورة مباشرة؛ تم بدء التحميل لتتمكن من مشاركتها.";
-
-    $("download").click();
+  } catch (e) {
+    if (e.name !== "AbortError") {
+      $("status").textContent =
+        "تعذّرت المشاركة. يمكنك تحميل الصورة ومشاركتها يدويًا.";
+      await showShareFallback().catch(() => {});
+    }
+  } finally {
+    if ($("name").value.trim()) btn.disabled = false;
   }
 }
 
-// مشاركة الصورة
-$("share").onclick = openShareModal;
+$("share").onclick = shareNow;
 document.querySelectorAll("[data-share-close]").forEach((button) => {
   button.onclick = closeShareModal;
 });
 document.querySelectorAll("[data-share-platform]").forEach((button) => {
-  button.onclick = async () => {
-    closeShareModal();
-    await shareImage(button.dataset.sharePlatform);
-  };
+  button.onclick = () => openPlatform(button.dataset.sharePlatform);
+});
+shareDownload.onclick = downloadShareFile;
+
+
+// ===== تحسينات الواجهة =====
+function toast(msg) {
+  const t = $("toast");
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toast.t);
+  toast.t = setTimeout(() => t.classList.remove("show"), 2800);
+}
+
+// حفظ التفضيلات (بدون الاسم)
+const PREF = "athar-prefs";
+const savePrefs = () => {
+  try {
+    localStorage.setItem(PREF, JSON.stringify({ theme, female, size: $("size").value }));
+  } catch {}
+};
+try {
+  const p = JSON.parse(localStorage.getItem(PREF) || "null");
+  if (p) {
+    if (["portrait", "square", "story"].includes(p.size)) $("size").value = p.size;
+    if (p.female) $("female").click();
+    document.querySelector(`[data-theme="${p.theme}"]`)?.click();
+  }
+} catch {}
+["male", "female"].forEach((id) => $(id).addEventListener("click", savePrefs));
+document.querySelectorAll("[data-theme]").forEach((b) => b.addEventListener("click", savePrefs));
+$("size").addEventListener("change", savePrefs);
+
+// Enter لإنشاء البوست
+$("name").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.isComposing) {
+    e.preventDefault();
+    $("generate").click();
+    $("name").blur();
+  }
+});
+
+// حركة ظهور المعاينة عند الإنشاء
+$("generate").addEventListener("click", () => {
+  const wrap = document.querySelector(".canvas-wrap");
+  wrap.classList.remove("reveal");
+  void wrap.offsetWidth;
+  wrap.classList.add("reveal");
+  if (!$("name").value.trim()) $("name").classList.add("shake");
+  setTimeout(() => $("name").classList.remove("shake"), 500);
 });
 
 // إظهار المعاينة الأولية
+const _render = render;
+render = function () {
+  _render.apply(this, arguments);
+  scheduleSharePrep();
+};
 render();
 document.fonts?.ready.then(render);
 
@@ -692,7 +830,7 @@ fetch("quran.json")
   })
   .then((d) => {
     surahs = d.data.surahs.filter(
-      (s) => s.ayahs.length >= 5
+      (s) => s.ayahs.length >= 3
     );
 
     for (const s of surahs) {
