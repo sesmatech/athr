@@ -112,7 +112,7 @@ const DUAS = [
 
 const HISTORY_KEY = "athar-content-history-v1";
 const REUSE_AFTER_MS = 30 * 24 * 60 * 60 * 1000;
-const MAX_DUA_CHARS = 480; // حدّ تقريبي (بدون التشكيل) لاختيار ٣ أدعية بدل ٢
+const MAX_DUA_CHARS = 480;
 
 function loadHistory() {
   try {
@@ -137,7 +137,6 @@ function saveHistory(history) {
   localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
 }
 
-// نص الدعاء بحسب الجنس، مع إدخال الاسم عند الحاجة
 function renderDua(dua, name) {
   const t = female ? dua.f : dua.m;
   if (!name) return t;
@@ -147,7 +146,6 @@ function renderDua(dua, name) {
 
 const plainLength = (t) => t.replace(/[\u064B-\u0652\u0670]/g, "").length;
 
-// اختيار دعاءين أو ثلاثة (بحد أقصى ٣) من الأدعية الجاهزة
 function prayers(history) {
   const items = DUAS.map((dua, i) => ({
     id: `dua-${i}`,
@@ -163,7 +161,6 @@ function prayers(history) {
     .filter((it) => isRecent(history, "prayers", it.id))
     .sort((a, b) => usedAt(a) - usedAt(b));
 
-  // يفضّل الأدعية غير المستخدمة حديثًا، وإلا الأقدم استخدامًا
   const take = (ok) => {
     const pool = fresh.filter(ok);
     if (pool.length) {
@@ -176,16 +173,14 @@ function prayers(history) {
     return old;
   };
 
-  // الدعاء الأول يحمل اسم المتوفى
   const chosen = [take((it) => it.named)];
-  const wanted = 2 + pick(2); // ٢ أو ٣
+  const wanted = 2 + pick(2);
   while (chosen.length < wanted) {
     const it = take((x) => !x.nameOnly);
     if (!it) break;
     chosen.push(it);
   }
 
-  // إن كانت الأدعية الثلاثة طويلة جدًا نكتفي بدعاءين ليبقى الخط مقروءًا
   const total = chosen.reduce((n, it) => n + plainLength(it.dua.m), 0);
   if (chosen.length === 3 && total > MAX_DUA_CHARS) chosen.pop();
 
@@ -210,14 +205,11 @@ function chooseVerseRun(selected, history) {
   return options.length ? options[pick(options.length)] : null;
 }
 
-// إنشاء بوست جديد
 function make() {
   const raw = $("name").value.trim();
 
   if (!raw) {
-    $("status").textContent =
-      "اكتب اسم المتوفى أولًا لإنشاء البوست.";
-
+    $("status").textContent = "اكتب اسم المتوفى أولًا لإنشاء البوست.";
     $("name").focus();
     return;
   }
@@ -230,8 +222,7 @@ function make() {
   const selectedPrayers = prayers(history);
 
   if (!verseRun || !selectedPrayers) {
-    $("status").textContent =
-      "استُنفدت الخيارات الجديدة خلال آخر 30 يومًا. جرّب سورة أخرى أو انتظر انتهاء المدة.";
+    $("status").textContent = "استُنفدت الخيارات الجديدة خلال آخر 30 يومًا. جرّب سورة أخرى أو انتظر انتهاء المدة.";
     return;
   }
 
@@ -258,14 +249,11 @@ function make() {
   $("download").disabled = false;
   $("share").disabled = false;
 
-  $("status").textContent =
-    "تم إنشاء بوست جديد. تقبّل الله دعاءكم.";
+  $("status").textContent = "تم إنشاء بوست جديد. تقبّل الله دعاءكم.";
 }
 
-// تقسيم النص إلى أسطر بحسب العرض
 function lines(text, size, width) {
-  ctx.font =
-    `500 ${size}px "Amiri", "Noto Naskh Arabic", "Times New Roman", serif`;
+  ctx.font = `500 ${size}px "Amiri", "Noto Naskh Arabic", "Times New Roman", serif`;
 
   let out = [];
   let line = "";
@@ -286,11 +274,8 @@ function lines(text, size, width) {
   return out;
 }
 
-// رسم نص داخل التصميم
 function text(t, x, y, size, color) {
-  ctx.font =
-    `500 ${size}px "Amiri", "Noto Naskh Arabic", "Times New Roman", serif`;
-
+  ctx.font = `500 ${size}px "Amiri", "Noto Naskh Arabic", "Times New Roman", serif`;
   ctx.fillStyle = color;
   ctx.fillText(t, x, y);
 }
@@ -392,7 +377,6 @@ function drawFooterPanel(h, gold, dark) {
   ornament(906, top + 34, 13, gold, 0.8);
 }
 
-// رسم التصميم
 function render() {
   let h = {
     square: 1080,
@@ -421,7 +405,6 @@ function render() {
 
   drawPremiumFrame(h, bg, gold, dark);
 
-  // توهّج ناعم خلف النص
   const glow = ctx.createRadialGradient(540, h * 0.4, 40, 540, h * 0.4, 620);
   glow.addColorStop(0, gold + (dark ? "26" : "1c"));
   glow.addColorStop(1, gold + "00");
@@ -431,44 +414,19 @@ function render() {
   ctx.textAlign = "center";
   ctx.direction = "rtl";
 
-  text(
-    "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
-    540,
-    126,
-    31,
-    gold
-  );
+  text("بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ", 540, 126, 31, gold);
 
-  // المعاينة الأولية
   if (!current) {
-    text(
-      "آياتٌ ودعاء لمن نحب",
-      540,
-      h / 2 - 20,
-      52,
-      ink
-    );
-
-    text(
-      "أدخل الاسم، واصنع أثرًا من الدعاء",
-      540,
-      h / 2 + 45,
-      29,
-      gold
-    );
-
+    text("آياتٌ ودعاء لمن نحب", 540, h / 2 - 20, 52, ink);
+    text("أدخل الاسم، واصنع أثرًا من الدعاء", 540, h / 2 + 45, 29, gold);
     return;
   }
 
   const { s, start, name } = current;
 
-  // ثلاث آيات متتالية
   const verses = s.ayahs
     .slice(start, start + 3)
-    .map(
-      (a) =>
-        a.text + " ﴿" + ar(a.numberInSurah) + "﴾"
-    )
+    .map((a) => a.text + " ﴿" + ar(a.numberInSurah) + "﴾")
     .join(" ");
 
   const ds = current.prayers.map((prayer, index) =>
@@ -481,41 +439,29 @@ function render() {
   let need;
   const budget = h - 495;
 
-  // ضبط حجم الخط ليتسع المحتوى
   do {
     ls = lines(verses, size, 930);
-
     pl = ds.map((t) => lines(t, size - 1, 930));
 
     need =
       ls.length * size * 1.65 +
-      pl.reduce(
-        (n, l) =>
-          n + l.length * (size - 1) * 1.55 + 18,
-        0
-      ) + 72;
+      pl.reduce((n, l) => n + l.length * (size - 1) * 1.55 + 18, 0) +
+      72;
 
     if (need <= budget) break;
 
     size--;
   } while (size > 16);
 
-  // يترك مسافة مريحة أسفل شريط البسملة والزخرفة العلوية.
   let y = 210;
 
-  // رسم الآيات
   for (const l of ls) {
     text(l, 540, y, size, ink);
     y += size * 1.65;
   }
 
-  // اسم السورة وأرقام الآيات
   text(
-    `${s.name} • الآيات ${
-      ar(s.ayahs[start].numberInSurah)
-    }–${
-      ar(s.ayahs[start + 2].numberInSurah)
-    }`,
+    `${s.name} • الآيات ${ar(s.ayahs[start].numberInSurah)}–${ar(s.ayahs[start + 2].numberInSurah)}`,
     540,
     y + 12,
     24,
@@ -524,7 +470,6 @@ function render() {
 
   y += 44;
 
-  // الخط الفاصل
   for (const [x1, x2] of [[270, 510], [810, 570]]) {
     const g = ctx.createLinearGradient(x1, 0, x2, 0);
     g.addColorStop(0, gold + "00");
@@ -546,66 +491,33 @@ function render() {
 
   y += 26;
 
-  // عنوان الأدعية
   text(
-    female
-      ? "اللهم ارحم من اشتقنا إليها"
-      : "اللهم ارحم من اشتقنا إليه",
+    female ? "اللهم ارحم من اشتقنا إليها" : "اللهم ارحم من اشتقنا إليه",
     540,
     y,
     29,
     gold
   );
 
-  // فصل واضح بين عنوان الأدعية وأول دعاء كي لا تتداخل الحروف العربية.
   y += 58;
 
-  // رسم الأدعية
-  pl.forEach((l, i) => {
+  pl.forEach((l) => {
     for (const line of l) {
       text(line, 540, y, size - 1, ink);
       y += (size - 1) * 1.55;
     }
-
     y += 18;
   });
 
   drawFooterPanel(h, gold, dark);
 
-  // أسفل التصميم
-  text(
-    "رحم الله روحًا لا تُنسى",
-    540,
-    h - 166,
-    29,
-    gold
-  );
-
-  text(
-    name,
-    540,
-    h - 126,
-    Math.min(
-      37,
-      (820 / Math.max(name.length, 1)) * 1.5
-    ),
-    ink
-  );
-
-  text(
-    "\u062c\u0645\u064a\u0639\u0020\u0627\u0644\u062d\u0642\u0648\u0642\u0020\u0645\u062d\u0641\u0648\u0638\u0629\u0020SESMA Technology 2006",
-    540,
-    h - 76,
-    15,
-    gold
-  );
-
+  text("رحم الله روحًا لا تُنسى", 540, h - 166, 29, gold);
+  text(name, 540, h - 126, Math.min(37, (820 / Math.max(name.length, 1)) * 1.5), ink);
+  text("جميع الحقوق محفوظة SESMA Technology 2006", 540, h - 76, 15, gold);
 }
 
-// زر إنشاء بوست
 $("generate").onclick = make;
 
-// تحديد المتوفى أو المتوفاة
 for (const sex of ["male", "female"]) {
   $(sex).onclick = () => {
     female = sex === "female";
@@ -615,31 +527,24 @@ for (const sex of ["male", "female"]) {
       $(id).setAttribute("aria-pressed", id === sex);
     }
 
-    if (current) render(); // نفس الأدعية بصيغة المذكر/المؤنث
+    if (current) render();
   };
 }
 
-// تغيير ألوان التصميم
-document
-  .querySelectorAll("[data-theme]")
-  .forEach((b) => {
-    b.onclick = () => {
-      theme = b.dataset.theme;
+document.querySelectorAll("[data-theme]").forEach((b) => {
+  b.onclick = () => {
+    theme = b.dataset.theme;
 
-      document
-        .querySelectorAll("[data-theme]")
-        .forEach((t) => {
-          t.classList.toggle("chosen", t === b);
-        });
+    document.querySelectorAll("[data-theme]").forEach((t) => {
+      t.classList.toggle("chosen", t === b);
+    });
 
-      render();
-    };
-  });
+    render();
+  };
+});
 
-// تغيير المقاس
 $("size").onchange = render;
 
-// تحديث الاسم في التصميم
 $("name").oninput = () => {
   if (current) {
     if (!$("name").value.trim()) {
@@ -657,14 +562,10 @@ $("name").oninput = () => {
   }
 };
 
-// تحويل التصميم إلى صورة PNG
 function blob() {
-  return new Promise((r) =>
-    canvas.toBlob(r, "image/png")
-  );
+  return new Promise((r) => canvas.toBlob(r, "image/png"));
 }
 
-// تحميل الصورة
 $("download").onclick = async () => {
   const b = await blob();
   const url = URL.createObjectURL(b);
@@ -685,7 +586,6 @@ function closeShareModal() {
   shareModal.hidden = true;
 }
 
-// يجهّز ملف الصورة مسبقًا حتى تكون المشاركة بضغطة واحدة
 function prepareShareFile() {
   if (!shareFilePromise) {
     const version = shareVersion;
@@ -702,7 +602,6 @@ function prepareShareFile() {
   return shareFilePromise;
 }
 
-// تجهيز الصورة في الخلفية بعد كل تعديل على التصميم
 function scheduleSharePrep() {
   clearTimeout(shareTimer);
   shareTimer = setTimeout(() => {
@@ -721,7 +620,6 @@ function downloadShareFile() {
   setTimeout(() => URL.revokeObjectURL(url), 5000);
 }
 
-// نسخ الصورة نفسها إلى الحافظة لتُلصق في المنصة (واتساب ويب / فيسبوك ...)
 async function copyImageToClipboard() {
   try {
     if (!navigator.clipboard?.write || typeof ClipboardItem === "undefined") return false;
@@ -734,7 +632,6 @@ async function copyImageToClipboard() {
   }
 }
 
-// بديل للمتصفحات التي لا تدعم مشاركة الملفات (مثل الحاسوب)
 async function showShareFallback() {
   const copied = await copyImageToClipboard();
   await prepareShareFile();
@@ -746,20 +643,39 @@ async function showShareFallback() {
     : "تم حفظ الصورة على جهازك. اختر المنصة ثم أرفق الصورة المحفوظة.";
 }
 
-// المواقع لا تقبل إرفاق صورة عبر رابط، لذلك نفتح المنصة فقط دون أي نص
-// والصورة تكون منسوخة/محفوظة مسبقًا لإرفاقها.
+// تعديل التعامل مع المنصات ليدعم تطبيق الأندرويد أو المتصفح
 function openPlatform(platform) {
+  const target = (platform || "").toLowerCase();
+
+  // إذا كان متصفح داخل تطبيق أندرويد
+  if (window.AndroidNative && typeof window.AndroidNative.shareImage === "function") {
+    const dataUrl = canvas.toDataURL("image/png", 0.95);
+    window.AndroidNative.shareImage(dataUrl, target);
+    closeShareModal();
+    return;
+  }
+
+  // إذا كان متصفح ويب عادي
   const urls = {
-    WhatsApp: "https://web.whatsapp.com/",
-    Facebook: "https://www.facebook.com/",
-    Instagram: "https://www.instagram.com/"
+    whatsapp: "https://web.whatsapp.com/",
+    facebook: "https://www.facebook.com/",
+    instagram: "https://www.instagram.com/"
   };
-  if (urls[platform]) window.open(urls[platform], "_blank", "noopener");
+  if (urls[target]) window.open(urls[target], "_blank", "noopener");
   else closeShareModal();
 }
 
-// مشاركة بضغطة واحدة: تفتح قائمة المشاركة مباشرة مع الصورة مرفقة (بدون نص)
+// مشاركة البوست
 async function shareNow() {
+  // إذا كان التصفح من داخل تطبيق أندرويد
+  if (window.AndroidNative && typeof window.AndroidNative.shareImage === "function") {
+    const dataUrl = canvas.toDataURL("image/png", 0.95);
+    window.AndroidNative.shareImage(dataUrl, "general");
+    $("status").textContent = "تم فتح قائمة المشاركة في الهاتف.";
+    return;
+  }
+
+  // السلوك الطبيعي في المتصفحات
   const btn = $("share");
   navigator.vibrate?.(12);
   let file = shareFile;
@@ -772,8 +688,6 @@ async function shareNow() {
     }
 
     if (navigator.canShare?.({ files: [file] })) {
-      // الصورة فقط: إرسال title/text مع الملف يجعل بعض التطبيقات
-      // (فيسبوك وغيره) تعرض النص كتعليق أو تتجاهل الصورة.
       await navigator.share({ files: [file] });
       $("status").textContent = "تمت المشاركة. تقبّل الله منكم.";
       toast("تمت المشاركة. تقبّل الله منكم ✦");
@@ -782,11 +696,9 @@ async function shareNow() {
     }
   } catch (e) {
     if (e.name === "NotAllowedError") {
-      // انتهت صلاحية الضغطة أثناء تجهيز الصورة؛ الصورة جاهزة الآن
       $("status").textContent = "الصورة جاهزة. اضغط «مشاركة» مرة أخرى.";
     } else if (e.name !== "AbortError") {
-      $("status").textContent =
-        "تعذّرت المشاركة. يمكنك تحميل الصورة ومشاركتها يدويًا.";
+      $("status").textContent = "تعذّرت المشاركة. يمكنك تحميل الصورة ومشاركتها يدويًا.";
       await showShareFallback().catch(() => {});
     }
   } finally {
@@ -795,16 +707,17 @@ async function shareNow() {
 }
 
 $("share").onclick = shareNow;
+
 document.querySelectorAll("[data-share-close]").forEach((button) => {
   button.onclick = closeShareModal;
 });
+
 document.querySelectorAll("[data-share-platform]").forEach((button) => {
   button.onclick = () => openPlatform(button.dataset.sharePlatform);
 });
+
 shareDownload.onclick = downloadShareFile;
 
-
-// ===== تحسينات الواجهة =====
 function toast(msg) {
   const t = $("toast");
   if (!t) return;
@@ -814,7 +727,6 @@ function toast(msg) {
   toast.t = setTimeout(() => t.classList.remove("show"), 2800);
 }
 
-// حفظ التفضيلات (بدون الاسم)
 const PREF = "athar-prefs";
 const savePrefs = () => {
   try {
@@ -833,7 +745,6 @@ try {
 document.querySelectorAll("[data-theme]").forEach((b) => b.addEventListener("click", savePrefs));
 $("size").addEventListener("change", savePrefs);
 
-// Enter لإنشاء البوست
 $("name").addEventListener("keydown", (e) => {
   if (e.key === "Enter" && !e.isComposing) {
     e.preventDefault();
@@ -842,7 +753,6 @@ $("name").addEventListener("keydown", (e) => {
   }
 });
 
-// حركة ظهور المعاينة عند الإنشاء
 $("generate").addEventListener("click", () => {
   const wrap = document.querySelector(".canvas-wrap");
   wrap.classList.remove("reveal");
@@ -852,7 +762,6 @@ $("generate").addEventListener("click", () => {
   setTimeout(() => $("name").classList.remove("shake"), 500);
 });
 
-// إظهار المعاينة الأولية
 const _render = render;
 render = function () {
   _render.apply(this, arguments);
@@ -861,37 +770,28 @@ render = function () {
 render();
 document.fonts?.ready.then(render);
 
-// تحميل بيانات القرآن الكريم
 fetch("quran.json")
   .then((r) => {
     if (!r.ok) throw Error();
     return r.json();
   })
   .then((d) => {
-    surahs = d.data.surahs.filter(
-      (s) => s.ayahs.length >= 3
-    );
+    surahs = d.data.surahs.filter((s) => s.ayahs.length >= 3);
 
     for (const s of surahs) {
       let o = document.createElement("option");
-
       o.value = s.number;
       o.textContent = s.name;
-
       $("surah").append(o);
     }
 
-    $("status").textContent =
-      "جاهز. أدخل الاسم لإنشاء أول بوست.";
+    $("status").textContent = "جاهز. أدخل الاسم لإنشاء أول بوست.";
   })
   .catch(() => {
-    $("status").textContent =
-      "تعذّر تحميل النص القرآني. أعد تحميل الصفحة.";
-
+    $("status").textContent = "تعذّر تحميل النص القرآني. أعد تحميل الصفحة.";
     $("generate").disabled = true;
   });
 
-// الهيدر: يصغر بسلاسة عند التمرير
 (() => {
   const header = document.querySelector("header");
   let ticking = false;
