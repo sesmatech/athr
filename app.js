@@ -653,7 +653,7 @@ fetch("quran.json")
 (() => {
   document.documentElement.classList.add("js");
   const buzz = (n = 10) => navigator.vibrate?.(n);
-  setTimeout(() => $("splash")?.classList.add("out"), 1300);
+  setTimeout(() => $("splash")?.classList.add("out"), 3000);
   document.addEventListener("pointerdown", (e) => {
     const b = e.target.closest("button");
     if (!b || b.disabled) return;
