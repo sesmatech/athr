@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#0e1914">
+<meta name="description" content="صمّم بوست آيات ودعاء باسم من تحب، وحمّله صورة جاهزة للمشاركة.">
+<title>أثر | آيات ودعاء لمن نحب</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2317251f'/%3E%3Ctext x='32' y='45' font-size='40' text-anchor='middle' fill='%23d4b371'%3E%DB%9E%3C/text%3E%3C/svg%3E">
+<link rel="preload" href="fonts/amiri-arabic-700-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="splash" aria-hidden="true"><svg viewBox="0 0 48 48" width="84" height="84" fill="none" stroke="#d4b371" stroke-width="1.2" stroke-linejoin="round"><path d="M24 3l5.2 8.3 9.6-2.1-2.1 9.6L45 24l-8.3 5.2 2.1 9.6-9.6-2.1L24 45l-5.2-8.3-9.6 2.1 2.1-9.6L3 24l8.3-5.2-2.1-9.6 9.6 2.1z"/><path d="M24 12l8.5 12L24 36l-8.5-12z" fill="#d4b371" fill-opacity=".2"/><circle cx="24" cy="24" r="3" fill="#d4b371"/></svg><b>أثر</b><small>آياتٌ ودعاء</small></div>
+<div class="app">
+  <header>
+    <div class="logo">
+      <span class="rosette" aria-hidden="true"><svg viewBox="0 0 48 48" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M24 3l5.2 8.3 9.6-2.1-2.1 9.6L45 24l-8.3 5.2 2.1 9.6-9.6-2.1L24 45l-5.2-8.3-9.6 2.1 2.1-9.6L3 24l8.3-5.2-2.1-9.6 9.6 2.1z"/><circle cx="24" cy="24" r="4" fill="currentColor"/></svg></span>
+      <div><b>أثر</b><small>آياتٌ ودعاء</small></div>
+    </div>
+    <span class="chip"><i></i>ذكرى طيبة</span>
+  </header>
+
+  <main>
+    <section class="hero">
+      <span>لِمَنْ بَقِيَ أَثَرُهُمْ فِينَا</span>
+      <h1>غَابُوا عَنْ أَعْيُنِنَا وَبَقُوا فِي <em>دُعَائِنَا</em></h1>
+    </section>
+
+    <section class="card">
+      <h2 class="ct"><s>1</s>خصّص الدعاء</h2>
+      <label for="name">اسم المتوفى <b>*</b></label>
+      <div class="field"><input id="name" maxlength="60" placeholder="اكتب الاسم هنا" autocomplete="off" enterkeyhint="done"><button id="clearName" type="button" aria-label="مسح">×</button></div>
+      <label>الدعاء لـ</label>
+      <div class="seg">
+        <button class="active" id="male" type="button" aria-pressed="true">ذكر</button>
+        <button id="female" type="button" aria-pressed="false">أنثى</button>
+      </div>
+    </section>
+
+    <section class="preview">
+      <div class="preview-head"><span><i></i>معاينة التصميم</span><small id="dimensions">1080 × 1350 px</small></div>
+      <div class="canvas-wrap">
+        <canvas id="canvas" width="1080" height="1350" aria-label="معاينة بوست الآيات والدعاء"></canvas>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="ct"><s>2</s>اللمسات الأخيرة</h2>
+      <label>لون التصميم</label>
+      <div class="themes">
+        <button data-theme="ivory" class="chosen" aria-label="عاجي وذهبي"><u></u><span>عاجي</span></button>
+        <button data-theme="dark" aria-label="أسود وذهبي"><u></u><span>ليلي</span></button>
+        <button data-theme="white" aria-label="أبيض وذهبي"><u></u><span>أبيض</span></button>
+      </div>
+      <label>مقاس التصميم</label>
+      <div class="sizes">
+        <button type="button" data-size="portrait"><span class="sh p"></span>طولي<small>4:5</small></button>
+        <button type="button" data-size="square"><span class="sh s"></span>مربع<small>1:1</small></button>
+        <button type="button" data-size="story"><span class="sh t"></span>ستوري<small>9:16</small></button>
+      </div>
+      <select id="size" hidden>
+        <option value="portrait">منشور طولي · 1080 × 1350</option>
+        <option value="square">منشور مربع · 1080 × 1080</option>
+        <option value="story">حالة / ستوري · 1080 × 1920</option>
+      </select>
+      <label for="surah">الآيات القرآنية</label>
+      <select id="surah"><option value="random">سورة عشوائية</option></select>
+      <p class="hint">٣ آيات متتالية من سورة واحدة. تظهر السور التي تحتوي على ٣ آيات فأكثر.</p>
+      <p id="status" role="status">جارٍ تجهيز النص القرآني…</p>
+    </section>
+
+    <p class="foot">كل دعوة تحمل محبة، وكل ذكرى تستحق أثرًا جميلًا.<small>النص القرآني: مصحف عثماني عبر AlQuran Cloud · الاسم يُستخدم على جهازك فقط ولا يُحفظ.<br>جميع الحقوق محفوظة SESMA Technology 2006</small></p>
+  </main>
+
+  <nav class="dock">
+    <button id="generate" class="primary" type="button"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 17v4M17 19h4"/></svg><span>إنشاء بوست</span></button>
+    <button id="download" type="button" disabled><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg><span>حفظ الصورة</span></button>
+  </nav>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+<script src="app.js"></script>
+</body>
+</html>
